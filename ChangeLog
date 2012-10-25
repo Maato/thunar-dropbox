@@ -1,0 +1,10 @@
+0.2.0:
+	- Broke comptability with older version of thunar in favor of
+	  Thunar 1.2.0
+
+0.1.1:
+	- Added thunar-dropbox.png because 'dropbox.png' was not available on
+	  certain distributions.
+
+0.1.0:
+	- First release.
