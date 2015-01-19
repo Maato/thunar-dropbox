@@ -186,6 +186,9 @@ static GList * tdp_provider_get_file_actions(
 		if(path == NULL)
 			continue;
 
+		if(!g_utf8_validate(path, -1, NULL))
+			continue;
+
 		dropbox_write(io_channel, "\t");
 		dropbox_write(io_channel, path);
 
