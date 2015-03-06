@@ -189,8 +189,16 @@ static GList * tdp_provider_get_file_actions(
 		if(!g_utf8_validate(path, -1, NULL))
 			continue;
 
-		dropbox_write(io_channel, "\t");
-		dropbox_write(io_channel, path);
+		char *real_path = realpath(path, NULL);
+		if(real_path) {
+			dropbox_write(io_channel, "\t");
+			dropbox_write(io_channel, real_path);
+			free(real_path);
+			real_path = NULL;
+		} else {
+			dropbox_write(io_channel, "\t");
+			dropbox_write(io_channel, path);
+		}
 
 		filelist = g_list_append(filelist, path);
 	}
