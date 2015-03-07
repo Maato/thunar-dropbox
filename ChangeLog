@@ -1,3 +1,8 @@
+0.2.1:
+	- Fixed crash when files with invalid UTF-8 encoded filenames were selected.
+	- Resolve symbolic links in paths.
+	- Install library with proper permissions, respect --libdir.
+
 0.2.0:
 	- Broke comptability with older version of thunar in favor of
 	  Thunar 1.2.0

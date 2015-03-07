@@ -4,7 +4,7 @@ import Options
 import Utils
 import Build
 
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 APPNAME = 'thunar-dropbox'
 
 top = '.'
