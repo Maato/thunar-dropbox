@@ -2,3 +2,6 @@ Thunar-Dropbox authors/contributors:
 
 Maato <maato@softwarebakery.com>
  - Developer
+
+Pablo Lezaeta <prflr88@gmail.com>
+ - Install library with proper permissions, respect --libdir.
