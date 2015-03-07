@@ -5,3 +5,4 @@ Maato <maato@softwarebakery.com>
 
 Pablo Lezaeta <prflr88@gmail.com>
  - Install library with proper permissions, respect --libdir.
+ - README
