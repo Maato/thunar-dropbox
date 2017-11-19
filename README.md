@@ -8,7 +8,7 @@ install that separately.
 
 ### Dependencies
 Depending on your distribution you might have to install 
-`libthunarx-2`.
+`libthunarx-3`.
 
 ### Installation from sources
     python2 ./waf configure

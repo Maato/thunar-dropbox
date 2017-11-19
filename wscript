@@ -17,7 +17,7 @@ def set_options(opt):
 
 def configure(conf):
 	conf.check_tool('compiler_cc')
-	conf.check_cfg(package='thunarx-2', uselib_store='THUNARX', mandatory=True, args='--cflags --libs')
+	conf.check_cfg(package='thunarx-3', uselib_store='THUNARX', mandatory=True, args='--cflags --libs')
 	conf.check_cfg(package='gio-2.0', uselib_store='GIO', mandatory=True, args='--cflags --libs')
 	conf.env.LIBDIR= Options.options.libdir
 
@@ -29,7 +29,7 @@ def build(bld):
 	prog.includes = 'src'
 	prog.find_sources_in_dirs('src')
 	bld.install_files ('${PREFIX}/share/icons/hicolor/16x16/apps', 'data/icons/hicolor/16x16/apps/thunar-dropbox.png')
-	bld.install_as (bld.env.LIBDIR + '/thunarx-2/thunar-dropbox.so', 'libthunar-dropbox.so', chmod=0755)
+	bld.install_as (bld.env.LIBDIR + '/thunarx-3/thunar-dropbox.so', 'libthunar-dropbox.so', chmod=0755)
 
 def shutdown():
 	if Options.commands['install'] or Options.commands['uninstall']:
