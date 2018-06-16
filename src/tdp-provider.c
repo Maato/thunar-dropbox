@@ -206,6 +206,7 @@ static GList * tdp_provider_get_file_actions(
 	dropbox_write(io_channel, "\ndone\n");
 	g_io_channel_flush(io_channel, NULL);
 
+	int n_items = 0;
 	for(;;)
 	{
 		gchar * line;
@@ -235,10 +236,12 @@ static GList * tdp_provider_get_file_actions(
 
 				if(len > 1)
 				{
+					// First array element is an "options"-tag.
 					int i;
-					for(i = 0; i < len; i++)
+					for(i = 1; i < len; i++)
 					{
 						add_action(menu, filelist, argval[i]);
+						n_items++;
 					}
 				}
 
@@ -257,10 +260,15 @@ static GList * tdp_provider_get_file_actions(
 		}
 	}
 
-	ThunarxMenuItem * menuRootItem = thunarx_menu_item_new("Tdp::menu_root",
+	if(n_items > 1) {
+		ThunarxMenuItem * menu_root = thunarx_menu_item_new("Tdp::menu_root",
 			"Dropbox", "", "thunar-dropbox");
-	thunarx_menu_item_set_menu(menuRootItem, menu);
-	actions = g_list_append(actions, menuRootItem);
+		thunarx_menu_item_set_menu(menu_root, menu);
+		actions = g_list_append(actions, menu_root);
+	}
+	else if (n_items == 1) {
+		actions = thunarx_menu_get_items(menu);
+	}
 
 
 	for(lp = filelist; lp != NULL; lp = lp->next)
