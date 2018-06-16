@@ -114,7 +114,7 @@ static void tdp_closure_destroy_notify(gpointer data, GClosure * closure)
 	g_list_free(actioninfo);
 }
 
-static GList * add_action(GList * list, GList * filelist, gchar * str)
+static void add_action(ThunarxMenu * menu, GList * filelist, gchar * str)
 {
 	ThunarxMenuItem * item = NULL;
 	gchar ** argval;
@@ -151,10 +151,7 @@ static GList * add_action(GList * list, GList * filelist, gchar * str)
 	}
 
 	g_strfreev(argval);
-
-	if(item != NULL)
-		list = g_list_append(list, item);
-	return list;
+	thunarx_menu_append_item(menu, item);
 }
 
 static GList * tdp_provider_get_file_actions(
@@ -162,6 +159,7 @@ static GList * tdp_provider_get_file_actions(
 	GtkWidget * window,
 	GList * files)
 {
+	ThunarxMenu * menu = thunarx_menu_new();
 	GFile * file;
 	GList * actions = NULL;
 	GList * lp;
@@ -240,7 +238,7 @@ static GList * tdp_provider_get_file_actions(
 					int i;
 					for(i = 0; i < len; i++)
 					{
-						actions = add_action(actions, filelist, argval[i]);
+						add_action(menu, filelist, argval[i]);
 					}
 				}
 
@@ -258,6 +256,12 @@ static GList * tdp_provider_get_file_actions(
 			break;
 		}
 	}
+
+	ThunarxMenuItem * menuRootItem = thunarx_menu_item_new("Tdp::menu_root",
+			"Dropbox", "", "thunar-dropbox");
+	thunarx_menu_item_set_menu(menuRootItem, menu);
+	actions = g_list_append(actions, menuRootItem);
+
 
 	for(lp = filelist; lp != NULL; lp = lp->next)
 	{
