@@ -27,6 +27,7 @@
 #include <sys/un.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 
 //##############################################################################
 // Exported functions

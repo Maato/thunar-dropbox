@@ -22,9 +22,12 @@
 //##############################################################################
 #include <unistd.h>
 #include <stdlib.h>
+#include <glib.h>
+#include <glib/gprintf.h>
 #include <gio/gio.h>
 
 #include "tdp-provider.h"
+#include "dropbox-communication.h"
 
 //##############################################################################
 // Function prototypes
@@ -69,7 +72,7 @@ static void tdp_provider_class_init(TdpProviderClass * klass)
 
 static void tdp_provider_menu_provider_init(ThunarxMenuProviderIface * iface)
 {
-	iface->get_file_actions = tdp_provider_get_file_actions;
+	iface->get_file_menu_items = tdp_provider_get_file_actions;
 }
 
 static void tdp_provider_init(TdpProvider * tdp_provider)
@@ -84,7 +87,7 @@ static void tdp_provider_finalize(GObject * object)
 	(*G_OBJECT_CLASS(tdp_provider_parent_class)->finalize)(object);
 }
 
-static void tdp_callback(GtkAction * action, gpointer data)
+static void tdp_callback(ThunarxMenuItem * item, gpointer data)
 {
 	GList * actioninfo = (GList*)data;
 	gchar * verb = NULL;
@@ -111,9 +114,9 @@ static void tdp_closure_destroy_notify(gpointer data, GClosure * closure)
 	g_list_free(actioninfo);
 }
 
-static GList * add_action(GList * list, GList * filelist, gchar * str)
+static void add_action(ThunarxMenu * menu, GList * filelist, gchar * str)
 {
-	GtkAction * action = NULL;
+	ThunarxMenuItem * item = NULL;
 	gchar ** argval;
 	guint len;
 	GList * actioninfo = NULL;
@@ -132,12 +135,10 @@ static GList * add_action(GList * list, GList * filelist, gchar * str)
 		gchar unique_name[128];
 		g_sprintf(unique_name, "Tdp::%s", argval[2]);
 
-		action = g_object_new(GTK_TYPE_ACTION,
-			"name", unique_name,
-			"label", argval[0],
-			"tooltip", argval[1],
-			"icon-name", "thunar-dropbox",
-			 NULL);
+		item = thunarx_menu_item_new(unique_name,
+			argval[0],
+			argval[1],
+			"thunar-dropbox");
 
 		actioninfo = g_list_prepend(actioninfo, g_strdup(argval[2]));
 
@@ -146,14 +147,11 @@ static GList * add_action(GList * list, GList * filelist, gchar * str)
 			(gpointer)actioninfo,
 			tdp_closure_destroy_notify);
 
-		g_signal_connect_closure(G_OBJECT(action), "activate", closure, TRUE);
+		g_signal_connect_closure(G_OBJECT(item), "activate", closure, TRUE);
 	}
 
 	g_strfreev(argval);
-
-	if(action != NULL)
-		list = g_list_append(list, action);
-	return list;
+	thunarx_menu_append_item(menu, item);
 }
 
 static GList * tdp_provider_get_file_actions(
@@ -161,6 +159,7 @@ static GList * tdp_provider_get_file_actions(
 	GtkWidget * window,
 	GList * files)
 {
+	ThunarxMenu * menu = thunarx_menu_new();
 	GFile * file;
 	GList * actions = NULL;
 	GList * lp;
@@ -207,6 +206,7 @@ static GList * tdp_provider_get_file_actions(
 	dropbox_write(io_channel, "\ndone\n");
 	g_io_channel_flush(io_channel, NULL);
 
+	int n_items = 0;
 	for(;;)
 	{
 		gchar * line;
@@ -215,15 +215,15 @@ static GList * tdp_provider_get_file_actions(
 
 		if(status == G_IO_STATUS_NORMAL)
 		{
-			if(strcmp(line, "done\n") == 0)
+			if(g_strcmp0(line, "done\n") == 0)
 			{
 				g_free(line);
 				break;
 			}
-			else if(strcmp(line, "notok\n") == 0)
+			else if(g_strcmp0(line, "notok\n") == 0)
 			{
 			}
-			else if(strcmp(line, "ok\n") == 0)
+			else if(g_strcmp0(line, "ok\n") == 0)
 			{
 			}
 			else
@@ -236,10 +236,12 @@ static GList * tdp_provider_get_file_actions(
 
 				if(len > 1)
 				{
+					// First array element is an "options"-tag.
 					int i;
-					for(i = 0; i < len; i++)
+					for(i = 1; i < len; i++)
 					{
-						actions = add_action(actions, filelist, argval[i]);
+						add_action(menu, filelist, argval[i]);
+						n_items++;
 					}
 				}
 
@@ -257,6 +259,17 @@ static GList * tdp_provider_get_file_actions(
 			break;
 		}
 	}
+
+	if(n_items > 1) {
+		ThunarxMenuItem * menu_root = thunarx_menu_item_new("Tdp::menu_root",
+			"Dropbox", "", "thunar-dropbox");
+		thunarx_menu_item_set_menu(menu_root, menu);
+		actions = g_list_append(actions, menu_root);
+	}
+	else if (n_items == 1) {
+		actions = thunarx_menu_get_items(menu);
+	}
+
 
 	for(lp = filelist; lp != NULL; lp = lp->next)
 	{
